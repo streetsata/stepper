@@ -10,6 +10,12 @@ public:
 	Program();
 	~Program();
 	void reinit();
+	void Stepping();
+
+	unsigned int countLoop = 10;
+	unsigned int countStep = 500;
+	unsigned int countDelay = 200;
+	unsigned int commonCount = 5;
 private:
 	static const int menuItemCount = 4;
 	static const int delayTime = 500;
@@ -25,11 +31,6 @@ private:
 	bool buttonDown = 0;
 	bool buttonStart = 0;
 	bool buttonSelect = 0;
-
-	unsigned int countLoop = 2;
-	unsigned int countStep = 1;
-	unsigned int countDelay = 3;
-	unsigned int commonCount = 5;
 
 	int prevMenuItem = 0;
 	int currentMenuItem = 1;
