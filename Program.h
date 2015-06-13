@@ -11,11 +11,6 @@ public:
 	~Program();
 	void reinit();
 	void Stepping();
-
-	unsigned int countLoop = 10;
-	unsigned int countStep = 500;
-	unsigned int countDelay = 200;
-	unsigned int commonCount = 5;
 private:
 	static const int menuItemCount = 4;
 	static const int delayTime = 500;
@@ -35,12 +30,25 @@ private:
 	int prevMenuItem = 0;
 	int currentMenuItem = 1;
 
+	unsigned int countLoop = 10;
+	unsigned int countStep = 500;
+	unsigned int countDelay = 200;
+	unsigned int commonCount = 5;
+
+	//////////////////////////////////////////
+	int dirpin = 6;
+	int steppin = 7;
+	int enable = 8;
+	int sensor = 2;
+	//////////////////////////////////////////
+
 	void show();
 	void reinitMenu();
 	void menuDown();
 	void menuUp();
 	void currentItemUp();
 	void currentItemDowm();
+	void manageStepMotor();
 
 	const String s[menuItemCount] =
 	{
