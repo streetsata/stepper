@@ -1,5 +1,7 @@
 #include "Program.h"
 
+
+
 Program::Program()
 {
 	if (this->lcd == NULL)
@@ -8,10 +10,12 @@ Program::Program()
 		lcd->begin(16, 2);
 	}
 
+	data.countLoop = EEPROM.read(0);
 	//////////////////////////////////////////
 	pinMode(dirpin, OUTPUT);
 	pinMode(steppin, OUTPUT);
 	pinMode(sensor, INPUT);
+	digitalWrite(dirpin, HIGH); // Set the direction.
 	//////////////////////////////////////////
 
 	reinitMenu();
@@ -19,6 +23,7 @@ Program::Program()
 
 Program::~Program()
 {
+	
 }
 
 void Program::reinit()
@@ -28,6 +33,7 @@ void Program::reinit()
 	{
 		this->menuDown();
 		delay(delayTime);
+		EEPROM.write(0, data.countLoop);
 	}
 
 	// Button Up
@@ -54,7 +60,16 @@ void Program::reinit()
 	// Start engine
 	if (analogRead(A4) == 1023)
 	{
-		manageStepMotor();
+		manageStepMotor(false);
+	}
+
+	if (digitalRead(sensor) == HIGH)
+	{
+		manageStepMotor(true);
+	}
+	else
+	{
+		manageStepMotor(false);
 	}
 
 	if (this->currentMenuItem != this->prevMenuItem)
@@ -67,11 +82,11 @@ void Program::reinit()
 void Program::currentItemUp()
 {
 	if (currentMenuItem == 1)
-		countLoop++;
+		data.countLoop++;
 	if (currentMenuItem == 2)
-		countStep++;
+		data.countStep++;
 	if (currentMenuItem == 3)
-		countDelay++;
+		data.countDelay++;
 
 	reinitMenu();
 }
@@ -79,11 +94,11 @@ void Program::currentItemUp()
 void Program::currentItemDowm()
 {
 	if (currentMenuItem == 1)
-		countLoop = countLoop != 0 ? countLoop - 1 : countLoop;
+		data.countLoop = data.countLoop != 0 ? data.countLoop - 1 : data.countLoop;
 	if (currentMenuItem == 2)
-		countStep = countStep != 0 ? countStep - 1 : countStep;
+		data.countStep = data.countStep != 0 ? data.countStep - 1 : data.countStep;
 	if (currentMenuItem == 3)
-		countDelay = countDelay != 0 ? countDelay - 1 : countDelay;
+		data.countDelay = data.countDelay != 0 ? data.countDelay - 1 : data.countDelay;
 
 	reinitMenu();
 }
@@ -132,60 +147,58 @@ void Program::reinitMenu()
 
 	if (this->currentMenuItem == 1)
 	{
-		this->lcdLine1 += String(countLoop);
-		this->lcdLine2 += String(countStep);
+		this->lcdLine1 += String(data.countLoop);
+		this->lcdLine2 += String(data.countStep);
 	}
 
 	if (this->currentMenuItem == 2)
 	{
-		this->lcdLine1 += String(countStep);
-		this->lcdLine2 += String(countDelay);
+		this->lcdLine1 += String(data.countStep);
+		this->lcdLine2 += String(data.countDelay);
 	}
 
 	if (this->currentMenuItem == 3)
 	{
-		this->lcdLine1 += String(countDelay);
-		this->lcdLine2 += String(commonCount);
+		this->lcdLine1 += String(data.countDelay);
+		this->lcdLine2 += String(data.commonCount);
 	}
 
 	if (this->currentMenuItem == 4)
 	{
-		this->lcdLine1 += String(commonCount);
-		this->lcdLine2 += String(countLoop);
+		this->lcdLine1 += String(data.commonCount);
+		this->lcdLine2 += String(data.countLoop);
 	}
 
 	this->show();
 }
 
 
-void Program::manageStepMotor()
+void Program::manageStepMotor(bool isStep)
 {
-	digitalWrite(dirpin, HIGH); // Set the direction.
-
-	if (digitalRead(sensor) != HIGH)
+	if (isStep)
+	{
+		for (int t = 0; t < data.countLoop; t++)
+		{
+			//delay(1500);
+			//digitalWrite(enable, LOW);
+			for (long j = 0; j < data.countStep; j++) // Iterate for 4000 microsteps.
+			{
+				digitalWrite(steppin, LOW); // This LOW to HIGH change is what creates the
+				delayMicroseconds(data.countDelay);
+				digitalWrite(steppin, HIGH);
+				delayMicroseconds(data.countDelay); // This delay time is close to top speed for this
+			} // particular motor. Any faster the motor stalls.
+			//digitalWrite(enable, LOW);
+		}
+	}
+	else
 	{
 		for (long i = 0; i < 2; i++)
 		{
 			digitalWrite(steppin, LOW); // This LOW to HIGH change is what creates the
-			delayMicroseconds(countDelay);
+			delayMicroseconds(data.countDelay);
 			digitalWrite(steppin, HIGH);
-			delayMicroseconds(countDelay); // This delay time is close to top speed for this
+			delayMicroseconds(data.countDelay); // This delay time is close to top speed for this
 		} // particular motor. Any faster the motor stalls
-	}
-	else
-	{
-		for (int t = 0; t < countLoop; t++)
-		{
-			//delay(1500);
-			//digitalWrite(enable, LOW);
-			for (long j = 0; j < countStep; j++) // Iterate for 4000 microsteps.
-			{
-				digitalWrite(steppin, LOW); // This LOW to HIGH change is what creates the
-				delayMicroseconds(countDelay);
-				digitalWrite(steppin, HIGH);
-				delayMicroseconds(countDelay); // This delay time is close to top speed for this
-			} // particular motor. Any faster the motor stalls.
-			//digitalWrite(enable, LOW);
-		}
 	}
 }

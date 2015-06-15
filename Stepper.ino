@@ -1,5 +1,7 @@
 #include "LiquidCrystal.h"
 #include "Arduino.h"
+//#include "EEPROM\EEPROM.h"
+#include "EEPROM.h"
 
 #include "Program.h"
 

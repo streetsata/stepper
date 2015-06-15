@@ -3,6 +3,15 @@
 #include "WString.h"
 #include "LiquidCrystal.h"
 #include "Arduino.h"
+#include "EEPROM.h"
+
+struct EEPROM_DATA
+{
+	unsigned int countLoop = 10;
+	unsigned int countStep = 500;
+	unsigned int countDelay = 200;
+	unsigned int commonCount = 0;
+};
 
 class Program
 {
@@ -10,7 +19,6 @@ public:
 	Program();
 	~Program();
 	void reinit();
-	void Stepping();
 private:
 	static const int menuItemCount = 4;
 	static const int delayTime = 500;
@@ -30,10 +38,7 @@ private:
 	int prevMenuItem = 0;
 	int currentMenuItem = 1;
 
-	unsigned int countLoop = 10;
-	unsigned int countStep = 500;
-	unsigned int countDelay = 200;
-	unsigned int commonCount = 5;
+	EEPROM_DATA data;
 
 	//////////////////////////////////////////
 	int dirpin = 6;
@@ -48,7 +53,7 @@ private:
 	void menuUp();
 	void currentItemUp();
 	void currentItemDowm();
-	void manageStepMotor();
+	void manageStepMotor(bool isStep);
 
 	const String s[menuItemCount] =
 	{
